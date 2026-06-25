@@ -1,0 +1,48 @@
+import streamlit as st
+import pandas as pd
+
+# Configuração da página web
+st.set_page_config(page_title="Sistema de Inventário TI", layout="wide")
+st.title("💻 Gestão de TI & Inventário")
+
+# Link da sua Planilha do Google (exportada como CSV)
+# Substitua o ID abaixo pelo ID real da sua planilha
+SPREADSHEET_ID = "SEU_ID_DA_PLANILHA_AQUI"
+
+@st.cache_data
+def carregar_dados(aba_name):
+    # Função para ler a aba específica da planilha diretamente da web
+    url = f"https://docs.google.com/spreadsheets/d/{SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet={aba_name}"
+    return pd.read_csv(url)
+
+# Menu Lateral de Navegação baseado nas suas abas
+opcao = st.sidebar.selectbox(
+    "Selecione o Módulo:",
+    ["Inventário Ativo", "Contas Google", "Stock de Toners", "Histórico"]
+)
+
+if opcao == "Inventário Ativo":
+    st.subheader("📋 Equipamentos Ativos")
+    df = carregar_dados("INVENTARIO Ativo")
+    
+    # Filtros rápidos
+    busca = st.text_input("Buscar por Utilizador, Marca ou Equipamento:")
+    if busca:
+        df = df[df.astype(str).apply(lambda x: x.str.contains(busca, case=False)).any(axis=1)]
+        
+    st.dataframe(df, use_container_width=True)
+
+elif opcao == "Contas Google":
+    st.subheader("📧 Gerenciamento de Contas")
+    df = carregar_dados("CONTAS GOOGLE")
+    st.dataframe(df, use_container_width=True)
+
+elif opcao == "Stock de Toners":
+    st.subheader("🖨️ Controlo de Toners")
+    df = carregar_dados("TONERS EM STOCK")
+    st.dataframe(df, use_container_width=True)
+
+elif opcao == "Histórico":
+    st.subheader("📜 Histórico de Movimentações")
+    df = carregar_dados("HISTORICO")
+    st.dataframe(df, use_container_width=True)
